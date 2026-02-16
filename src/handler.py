@@ -24,7 +24,10 @@ def get_secrets() -> dict:
     anthropic_resp = client.get_secret_value(SecretId="shop-seeker/anthropic-key")
     anthropic_key = json.loads(anthropic_resp["SecretString"])["api_key"]
 
-    return {"google_creds": google_creds, "anthropic_key": anthropic_key}
+    sheet_resp = client.get_secret_value(SecretId="shop-seeker/google-sheet-id")
+    sheet_id = json.loads(sheet_resp["SecretString"])["sheet_id"]
+
+    return {"google_creds": google_creds, "anthropic_key": anthropic_key, "sheet_id": sheet_id}
 
 
 def lambda_handler(event, context):
@@ -33,7 +36,7 @@ def lambda_handler(event, context):
     secrets = get_secrets()
     sheets = SheetsClient(
         credentials_dict=secrets["google_creds"],
-        sheet_id=SEARCH_CONFIG["sheet_id"],
+        sheet_id=secrets["sheet_id"],
     )
 
     # Step 1: Get already-seen URLs
@@ -43,14 +46,25 @@ def lambda_handler(event, context):
     # Step 2: Scrape all sources
     all_listings: list[Listing] = []
 
-    cl = CraigslistScraper(region=SEARCH_CONFIG["craigslist_region"])
+    logger.info("Starting Craigslist scraper")
+    cl = CraigslistScraper(
+        region=SEARCH_CONFIG["craigslist_region"],
+        max_price=int(SEARCH_CONFIG["max_price"]),
+    )
     all_listings.extend(cl.scrape())
+    logger.info(f"Craigslist done: {len(all_listings)} listings")
 
+    logger.info("Starting LoopNet scraper")
     ln = LoopNetScraper()
-    all_listings.extend(ln.scrape())
+    ln_listings = ln.scrape()
+    all_listings.extend(ln_listings)
+    logger.info(f"LoopNet done: {len(ln_listings)} listings")
 
+    logger.info("Starting CommercialCafe scraper")
     cc = CommercialCafeScraper()
-    all_listings.extend(cc.scrape())
+    cc_listings = cc.scrape()
+    all_listings.extend(cc_listings)
+    logger.info(f"CommercialCafe done: {len(cc_listings)} listings")
 
     logger.info(f"Scraped {len(all_listings)} total listings")
 
@@ -79,7 +93,8 @@ def lambda_handler(event, context):
     approved_count = 0
     rejected_count = 0
 
-    for listing in candidates:
+    for i, listing in enumerate(candidates, 1):
+        logger.info(f"Reviewing {i}/{len(candidates)}: {listing.title}")
         result = review_listing(listing, api_key=secrets["anthropic_key"])
 
         if result.approved:

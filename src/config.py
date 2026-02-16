@@ -7,5 +7,4 @@ SEARCH_CONFIG = {
     "max_price": float(os.environ.get("MAX_PRICE", "2400")),
     "min_sqft": float(os.environ.get("MIN_SQFT", "400")),
     "craigslist_region": os.environ.get("CRAIGSLIST_REGION", "sfbay"),
-    "sheet_id": os.environ.get("GOOGLE_SHEET_ID", ""),
 }

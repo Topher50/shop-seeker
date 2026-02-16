@@ -4,14 +4,11 @@ Description: Shop Seeker - Workshop space finder
 
 Globals:
   Function:
-    Timeout: 300
+    Timeout: 900
     Runtime: python3.12
     MemorySize: 256
 
 Parameters:
-  GoogleSheetId:
-    Type: String
-    Description: Google Sheet ID for results
   CenterLat:
     Type: String
     Default: "37.7767"
@@ -39,7 +36,6 @@ Resources:
       Handler: src.handler.lambda_handler
       Environment:
         Variables:
-          GOOGLE_SHEET_ID: !Ref GoogleSheetId
           CENTER_LAT: !Ref CenterLat
           CENTER_LNG: !Ref CenterLng
           RADIUS_MILES: !Ref RadiusMiles

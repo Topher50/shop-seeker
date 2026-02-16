@@ -11,12 +11,15 @@ SEARCH_PATHS = [
     "/search/san-francisco-ca/off",
 ]
 
+MAX_DETAIL_FETCHES = 50
+
 
 class CraigslistScraper:
     BASE_URL = "https://sfbay.craigslist.org"
 
-    def __init__(self, region: str = "sfbay"):
+    def __init__(self, region: str = "sfbay", max_price: int | None = None):
         self.region = region
+        self.max_price = max_price
         self.session = requests.Session()
         self.session.headers.update(
             {"User-Agent": "ShopSeeker/1.0 (workshop space finder)"}
@@ -24,11 +27,15 @@ class CraigslistScraper:
 
     def scrape(self) -> list[Listing]:
         listings = []
+        detail_count = 0
         for path in SEARCH_PATHS:
             url = f"{self.BASE_URL}{path}"
-            logger.info(f"Scraping {url}")
+            params = {}
+            if self.max_price:
+                params["max_price"] = self.max_price
+            logger.info(f"Scraping {url} params={params}")
             try:
-                resp = self.session.get(url, timeout=30)
+                resp = self.session.get(url, params=params, timeout=30)
                 resp.raise_for_status()
             except requests.RequestException as e:
                 logger.error(f"Failed to fetch {url}: {e}")
@@ -36,13 +43,16 @@ class CraigslistScraper:
 
             soup = BeautifulSoup(resp.text, "html.parser")
             result_items = soup.select("li.cl-static-search-result")
+            logger.info(f"Found {len(result_items)} search results")
 
             for item in result_items:
                 listing = self._parse_result(item)
                 if listing:
-                    self._fetch_detail(listing)
+                    if detail_count < MAX_DETAIL_FETCHES:
+                        self._fetch_detail(listing)
+                        detail_count += 1
+                        time.sleep(random.uniform(1, 2))
                     listings.append(listing)
-                    time.sleep(random.uniform(2, 5))
 
         return listings
 

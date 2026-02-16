@@ -57,8 +57,16 @@ Full listing text:
             messages=[{"role": "user", "content": user_content}],
         )
 
-        raw = response.content[0].text
-        data = json.loads(raw)
+        raw = response.content[0].text if response.content else ""
+        logger.info(f"Claude response (stop={response.stop_reason}, len={len(raw)}): {raw[:100]}")
+        # Strip markdown code fences if present
+        cleaned = raw.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+        data = json.loads(cleaned)
 
         return ReviewResult(
             approved=bool(data["approved"]),
@@ -67,10 +75,13 @@ Full listing text:
             reasoning=str(data.get("reasoning", "")),
         )
     except (json.JSONDecodeError, KeyError, IndexError) as e:
-        logger.error(f"Failed to parse Claude response: {e}")
+        logger.error(f"Failed to parse Claude response: {e}, raw: {raw[:200] if raw else '(empty)'}")
         return ReviewResult(
             approved=False,
             est_monthly_cost="Unknown",
             suitability_score=0,
             reasoning=f"Error parsing Claude response: {e}",
         )
+    except anthropic.APIError as e:
+        logger.error(f"Anthropic API error: {e}")
+        raise
