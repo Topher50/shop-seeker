@@ -8,6 +8,14 @@ logger = logging.getLogger(__name__)
 SEARCH_URL = "https://www.commercialcafe.com/commercial-space-for-rent/us/ca/san-francisco/"
 
 
+# NOTE: CommercialCafe uses Cloudflare bot protection and will return 403
+# for automated requests. The CSS selectors below are placeholder guesses
+# and likely do NOT match the real site structure. In practice, scrape()
+# will catch the 403 and return [].
+# TODO: Verify selectors with browser DevTools or switch to an alternative
+# data source (e.g., CommercialCafe email alerts, Yardi API).
+
+
 class CommercialCafeScraper:
     def __init__(self):
         self.session = requests.Session()

@@ -8,6 +8,14 @@ logger = logging.getLogger(__name__)
 SEARCH_URL = "https://www.loopnet.com/search/commercial-real-estate/san-francisco-ca/for-lease/"
 
 
+# NOTE: LoopNet uses Akamai bot protection and will almost always return
+# a challenge page instead of real results. The selectors below are based
+# on LoopNet's known "placard" terminology but are unverified against the
+# live site. In practice, scrape() will detect the bot challenge and return [].
+# TODO: Verify selectors with browser DevTools or switch to an alternative
+# data source (e.g., LoopNet email alerts, API access).
+
+
 class LoopNetScraper:
     def __init__(self):
         self.session = requests.Session()
