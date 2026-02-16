@@ -1,0 +1,10 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "shop-seeker"
+resolve_s3 = true
+s3_prefix = "shop-seeker"
+region = "us-west-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "GoogleSheetId=\"YOUR_SHEET_ID_HERE\""

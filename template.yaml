@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Shop Seeker - Workshop space finder
+
+Globals:
+  Function:
+    Timeout: 300
+    Runtime: python3.12
+    MemorySize: 256
+
+Parameters:
+  GoogleSheetId:
+    Type: String
+    Description: Google Sheet ID for results
+  CenterLat:
+    Type: String
+    Default: "37.7767"
+  CenterLng:
+    Type: String
+    Default: "-122.4173"
+  RadiusMiles:
+    Type: String
+    Default: "4"
+  MaxPrice:
+    Type: String
+    Default: "2400"
+  MinSqft:
+    Type: String
+    Default: "400"
+  CraigslistRegion:
+    Type: String
+    Default: "sfbay"
+
+Resources:
+  ShopSeekerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src.handler.lambda_handler
+      Environment:
+        Variables:
+          GOOGLE_SHEET_ID: !Ref GoogleSheetId
+          CENTER_LAT: !Ref CenterLat
+          CENTER_LNG: !Ref CenterLng
+          RADIUS_MILES: !Ref RadiusMiles
+          MAX_PRICE: !Ref MaxPrice
+          MIN_SQFT: !Ref MinSqft
+          CRAIGSLIST_REGION: !Ref CraigslistRegion
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource:
+                - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:shop-seeker/*"
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 14 * * ? *)
+            Description: Run Shop Seeker daily at 6am PT
+            Enabled: true
+
+Outputs:
+  ShopSeekerFunction:
+    Description: Lambda function ARN
+    Value: !GetAtt ShopSeekerFunction.Arn
