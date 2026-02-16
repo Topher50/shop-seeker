@@ -5,7 +5,7 @@ from src.models import Listing
 
 logger = logging.getLogger(__name__)
 
-SEARCH_URL = "https://www.commercialcafe.com/commercial-space-for-rent/us/ca/san-francisco/"
+SEARCH_URL = "https://www.commercialcafe.com/commercial-real-estate/us/ca/san-francisco/?ListingType=Lease"
 
 
 # NOTE: CommercialCafe uses Cloudflare bot protection and will return 403
