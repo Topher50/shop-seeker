@@ -1,0 +1,11 @@
+.worktrees/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+*.egg-info/
+.aws-sam/
+build/
+dist/

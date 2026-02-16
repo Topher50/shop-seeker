@@ -8,7 +8,8 @@ Shop Seeker — project details to be filled in as the codebase develops.
 
 ## Commands
 
-<!-- Add build, test, lint, and dev commands here as they are established -->
+- **Test:** `pytest` (run from repo root with venv activated)
+- **Build:** `sam build --use-container` (`--use-container` is required because `curl_cffi` has native C dependencies that must be compiled for the Lambda Linux runtime)
 
 ## Architecture
 
