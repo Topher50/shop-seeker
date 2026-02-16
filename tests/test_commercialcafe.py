@@ -17,17 +17,23 @@ def test_scrape_returns_listings():
     scraper = CommercialCafeScraper()
     listings = scraper.scrape()
 
-    assert len(listings) >= 1
+    assert len(listings) == 2
     for listing in listings:
         assert listing.source == "commercialcafe"
         assert listing.link.startswith("https://")
+        assert listing.title != ""
+
+    assert listings[0].title == "100 Bryant St"
+    assert listings[0].address == "100 Bryant St, San Francisco, CA 94107"
+    assert listings[0].price == "$30/Sqft/Yearly"
+    assert listings[0].sqft == "700 Sqft"
 
 
 @responses.activate
 def test_scrape_handles_empty_results():
     responses.get(
         "https://www.commercialcafe.com/commercial-real-estate/us/ca/san-francisco/?ListingType=Lease",
-        body="<html><body></body></html>",
+        body="<html><body><ul class='listings'></ul></body></html>",
         status=200,
     )
 

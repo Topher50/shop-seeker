@@ -1,32 +1,81 @@
 <!--
-  PLACEHOLDER FIXTURE: CommercialCafe uses Cloudflare bot protection (403),
-  so we cannot fetch the real page HTML programmatically. The CSS classes
-  below (listing-card, listing-title, etc.) are generic placeholders and
-  likely do NOT match CommercialCafe's actual structure.
-
-  TODO: Inspect the live CommercialCafe page with browser DevTools and
-  update these selectors to match the real structure.
+  Fixture based on real CommercialCafe HTML structure, verified via
+  Wayback Machine snapshot (2019). Note: CommercialCafe uses Cloudflare
+  bot protection so this cannot be fetched programmatically in production.
+  The site may have updated its structure since this snapshot.
 -->
 <html>
-<head><title>Commercial Space for Rent in San Francisco</title></head>
+<head><title>Commercial Real Estate in San Francisco, CA</title></head>
 <body>
-<div class="results-container">
-    <div class="listing-card" data-id="cc-001">
-        <a href="https://www.commercialcafe.com/listing/100-bryant-st-san-francisco-ca/cc-001/">
-            <h3 class="listing-title">Ground Floor Industrial - 700 SF</h3>
-            <div class="listing-price">$1,800/mo</div>
-            <div class="listing-size">700 SF</div>
-            <div class="listing-address">100 Bryant St, San Francisco, CA</div>
-        </a>
-    </div>
-    <div class="listing-card" data-id="cc-002">
-        <a href="https://www.commercialcafe.com/listing/200-townsend-st-san-francisco-ca/cc-002/">
-            <h3 class="listing-title">Creative Flex Space</h3>
-            <div class="listing-price">$2,100/mo</div>
-            <div class="listing-size">550 SF</div>
-            <div class="listing-address">200 Townsend St, San Francisco, CA</div>
-        </a>
-    </div>
-</div>
+<ul class="listings">
+    <li class="property-details property-details-basic" data-value="cc-001" id="cc-001">
+        <div class="item-presentation">
+            <div class="photo">
+                <img class="property" alt="100 Bryant St" src="" title="100 Bryant St"/>
+            </div>
+        </div>
+        <div class="item-information">
+            <div class="property-header">
+                <h2 class="building-name" title="100 Bryant St">
+                    <a href="https://www.commercialcafe.com/commercial-property/us/ca/san-francisco/100-bryant-st/">
+                        100 Bryant St
+                    </a>
+                </h2>
+            </div>
+            <span class="building-address" title="100 Bryant St, San Francisco, CA 94107">
+                100 Bryant St, San Francisco, CA 94107
+            </span>
+            <div class="item-characteristics">
+                <div class="price">
+                    <smaller class="text-muted">For Lease</smaller>
+                    <span>$30/Sqft/Yearly</span>
+                </div>
+                <div class="property-basic-details">
+                    <div class="availability key-value">
+                        <b>Availability</b>
+                        <ul>
+                            <li>1 Space</li>
+                            <li>700 Sqft</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+    <li class="property-details property-details-basic" data-value="cc-002" id="cc-002">
+        <div class="item-presentation">
+            <div class="photo">
+                <img class="property" alt="200 Townsend St" src="" title="200 Townsend St"/>
+            </div>
+        </div>
+        <div class="item-information">
+            <div class="property-header">
+                <h2 class="building-name" title="200 Townsend St">
+                    <a href="https://www.commercialcafe.com/commercial-property/us/ca/san-francisco/200-townsend-st/">
+                        200 Townsend St
+                    </a>
+                </h2>
+            </div>
+            <span class="building-address" title="200 Townsend St, San Francisco, CA 94107">
+                200 Townsend St, San Francisco, CA 94107
+            </span>
+            <div class="item-characteristics">
+                <div class="price">
+                    <smaller class="text-muted">For Lease</smaller>
+                    <span>$38/Sqft/Yearly</span>
+                </div>
+                <div class="property-basic-details">
+                    <div class="availability key-value">
+                        <b>Availability</b>
+                        <ul>
+                            <li>2 Spaces</li>
+                            <li>550 Sqft</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+</ul>
 </body>
 </html>
