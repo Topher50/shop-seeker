@@ -1,4 +1,5 @@
 import logging
+import re
 from bs4 import BeautifulSoup
 import requests
 from src.models import Listing
@@ -7,13 +8,12 @@ logger = logging.getLogger(__name__)
 
 SEARCH_URL = "https://www.loopnet.com/search/commercial-real-estate/san-francisco-ca/for-lease/"
 
-
 # NOTE: LoopNet uses Akamai bot protection and will almost always return
-# a challenge page instead of real results. The selectors below are based
-# on LoopNet's known "placard" terminology but are unverified against the
-# live site. In practice, scrape() will detect the bot challenge and return [].
-# TODO: Verify selectors with browser DevTools or switch to an alternative
-# data source (e.g., LoopNet email alerts, API access).
+# a challenge page instead of real results. In practice, scrape() will
+# detect the bot challenge and return [].
+# Selectors below are verified against the johnstenner/LoopnetMCP project
+# which successfully parses live LoopNet pages using curl_cffi for TLS
+# fingerprint impersonation.
 
 
 class LoopNetScraper:
@@ -51,23 +51,30 @@ class LoopNetScraper:
         return listings
 
     def _parse_card(self, card) -> Listing | None:
-        link_tag = card.select_one("a")
-        if not link_tag:
+        title_tag = card.select_one("header h4 a")
+        if not title_tag:
             return None
 
-        href = link_tag.get("href", "")
+        title = title_tag.get_text(strip=True)
+        href = title_tag.get("href", "")
         if not href.startswith("http"):
             href = f"https://www.loopnet.com{href}"
 
-        title_tag = card.select_one("h4")
-        title = title_tag.get_text(strip=True) if title_tag else ""
-
-        data_points = card.select(".data-points-2c-value")
-        price = data_points[0].get_text(strip=True) if len(data_points) > 0 else ""
-        sqft = data_points[1].get_text(strip=True) if len(data_points) > 1 else ""
-
-        addr_tag = card.select_one(".placard-carousel-address")
+        # Address from subtitle-beta link
+        addr_tag = card.select_one("header a.subtitle-beta")
         address = addr_tag.get_text(strip=True) if addr_tag else ""
+
+        # Data points: price from li[name="Price"], sqft from text pattern
+        price = ""
+        sqft = ""
+        for li in card.select("ul.data-points-2c li"):
+            name_attr = li.get("name")
+            text = li.get_text(strip=True)
+            if name_attr == "Price":
+                if text.lower() not in ("upon request", "negotiable", "call for pricing"):
+                    price = text
+            elif re.search(r"\d+[\d,]*\s*SF", text, re.IGNORECASE):
+                sqft = text
 
         return Listing(
             title=title,

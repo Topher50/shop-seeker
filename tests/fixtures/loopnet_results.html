@@ -1,44 +1,90 @@
 <!--
-  PLACEHOLDER FIXTURE: LoopNet uses Akamai bot protection, so we cannot
-  fetch the real page HTML programmatically. The "article.placard" structure
-  is based on LoopNet's known internal terminology, but the specific CSS
-  classes (data-points-2c, placard-carousel-address, etc.) are unverified.
-
-  TODO: Inspect the live LoopNet page with browser DevTools and update
-  these selectors to match the real structure.
+  Fixture based on real LoopNet HTML structure, verified via the
+  johnstenner/LoopnetMCP project which successfully parses live LoopNet pages.
+  Key selectors: article.placard, header h4 a, a.subtitle-beta,
+  ul.data-points-2c li[name="Price"], ul.data-points-2c li (sqft pattern).
+  Note: LoopNet uses Akamai bot protection so this cannot be fetched
+  programmatically with standard requests in production.
 -->
 <html>
-<head><title>Commercial Real Estate For Lease in San Francisco</title></head>
+<head><title>Commercial Real Estate For Lease - LoopNet</title></head>
 <body>
-<div class="search-results">
-    <article class="placard" data-id="12345">
-        <a href="https://www.loopnet.com/Listing/100-Mission-St-San-Francisco-CA/12345/">
-            <div class="placard-content">
-                <header class="placard-header">
-                    <h4>Industrial Warehouse - 800 SF</h4>
-                </header>
-                <ul class="data-points-2c">
-                    <li class="data-points-2c-value">$2,000/mo</li>
-                    <li class="data-points-2c-value">800 SF</li>
-                </ul>
-                <span class="placard-carousel-address">100 Mission St, San Francisco, CA</span>
+<div id="searchResults">
+  <ul>
+
+    <li>
+      <article class="placard tier4 landscape" data-id="12345">
+        <a class="placard-carousel-pseudo" href="/Listing/12345/100-Mission-St-San-Francisco-CA-94105/">
+          <div class="media">
+            <div class="carousel-theme-light xfade carousel">
+              <div class="carousel-view">
+                <div class="carousel-preview">
+                  <div class="carousel-inner">
+                    <div class="slide active">
+                      <figure>
+                        <img class="image-hide" src="https://images.loopnet.com/12345/photo1.jpg" alt="100 Mission St">
+                      </figure>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </a>
-    </article>
-    <article class="placard" data-id="67890">
-        <a href="https://www.loopnet.com/Listing/200-Folsom-St-San-Francisco-CA/67890/">
-            <div class="placard-content">
-                <header class="placard-header">
-                    <h4>Flex Space with Loading Dock</h4>
-                </header>
-                <ul class="data-points-2c">
-                    <li class="data-points-2c-value">$1,500/mo</li>
-                    <li class="data-points-2c-value">500 SF</li>
-                </ul>
-                <span class="placard-carousel-address">200 Folsom St, San Francisco, CA</span>
+        <header class="">
+          <div class="header-col">
+            <h4><a href="/Listing/12345/100-Mission-St-San-Francisco-CA-94105/">Industrial Warehouse</a></h4>
+            <a href="#" class="subtitle-beta">100 Mission St, San Francisco, CA 94105</a>
+          </div>
+        </header>
+        <ul class="data-points-2c">
+          <li name="Price">$2,000/mo</li>
+          <li>800 SF</li>
+          <li>Industrial</li>
+        </ul>
+        <ul company-logo-carousel="">
+          <li><img alt="CBRE" src="logo.png"></li>
+        </ul>
+      </article>
+    </li>
+
+    <li>
+      <article class="placard tier4 landscape" data-id="67890">
+        <a class="placard-carousel-pseudo" href="/Listing/67890/200-Folsom-St-San-Francisco-CA-94105/">
+          <div class="media">
+            <div class="carousel-theme-light xfade carousel">
+              <div class="carousel-view">
+                <div class="carousel-preview">
+                  <div class="carousel-inner">
+                    <div class="slide active">
+                      <figure>
+                        <img class="image-hide" src="https://images.loopnet.com/67890/photo1.jpg" alt="200 Folsom St">
+                      </figure>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </a>
-    </article>
+        <header class="">
+          <div class="header-col">
+            <h4><a href="/Listing/67890/200-Folsom-St-San-Francisco-CA-94105/">Flex Space with Loading Dock</a></h4>
+            <a href="#" class="subtitle-beta">200 Folsom St, San Francisco, CA 94105</a>
+          </div>
+        </header>
+        <ul class="data-points-2c">
+          <li name="Price">$1,500/mo</li>
+          <li>500 SF</li>
+          <li>Flex</li>
+        </ul>
+        <ul company-logo-carousel="">
+          <li><img alt="Cushman &amp; Wakefield" src="logo.png"></li>
+        </ul>
+      </article>
+    </li>
+
+  </ul>
 </div>
 </body>
 </html>
