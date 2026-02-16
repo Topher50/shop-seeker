@@ -1,38 +1,37 @@
 import logging
 import re
+import time
 from bs4 import BeautifulSoup
-import requests
+from curl_cffi import requests
 from src.models import Listing
 
 logger = logging.getLogger(__name__)
 
 SEARCH_URL = "https://www.loopnet.com/search/commercial-real-estate/san-francisco-ca/for-lease/"
 
-# NOTE: LoopNet uses Akamai bot protection and will almost always return
-# a challenge page instead of real results. In practice, scrape() will
-# detect the bot challenge and return [].
-# Selectors below are verified against the johnstenner/LoopnetMCP project
-# which successfully parses live LoopNet pages using curl_cffi for TLS
-# fingerprint impersonation.
-
 
 class LoopNetScraper:
     def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            }
-        )
+        self.session = requests.Session(impersonate="chrome136", timeout=30)
+
+    def _warmup(self):
+        """Hit the homepage to establish cookies before searching."""
+        try:
+            self.session.get("https://www.loopnet.com")
+        except Exception:
+            pass
 
     def scrape(self) -> list[Listing]:
         logger.info(f"Scraping {SEARCH_URL}")
+        self._warmup()
         try:
-            resp = self.session.get(SEARCH_URL, timeout=30)
+            resp = self.session.get(SEARCH_URL)
             resp.raise_for_status()
-        except requests.RequestException as e:
+        except Exception as e:
             logger.error(f"Failed to fetch {SEARCH_URL}: {e}")
             return []
+
+        time.sleep(3)
 
         soup = BeautifulSoup(resp.text, "html.parser")
 

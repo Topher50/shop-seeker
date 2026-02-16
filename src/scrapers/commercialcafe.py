@@ -1,37 +1,36 @@
 import logging
+import time
 from bs4 import BeautifulSoup
-import requests
+from curl_cffi import requests
 from src.models import Listing
 
 logger = logging.getLogger(__name__)
 
 SEARCH_URL = "https://www.commercialcafe.com/commercial-real-estate/us/ca/san-francisco/?ListingType=Lease"
 
-# NOTE: CommercialCafe uses Cloudflare bot protection and will return 403
-# for automated requests. In practice, scrape() will catch the 403 and
-# return []. Selectors below are based on a Wayback Machine snapshot and
-# may need updating if CommercialCafe changes their markup.
-# TODO: Verify selectors with browser DevTools or switch to an alternative
-# data source (e.g., CommercialCafe email alerts, Yardi API).
-
 
 class CommercialCafeScraper:
     def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            }
-        )
+        self.session = requests.Session(impersonate="chrome136", timeout=30)
+
+    def _warmup(self):
+        """Hit the homepage to establish cookies before searching."""
+        try:
+            self.session.get("https://www.commercialcafe.com")
+        except Exception:
+            pass
 
     def scrape(self) -> list[Listing]:
         logger.info(f"Scraping {SEARCH_URL}")
+        self._warmup()
         try:
-            resp = self.session.get(SEARCH_URL, timeout=30)
+            resp = self.session.get(SEARCH_URL)
             resp.raise_for_status()
-        except requests.RequestException as e:
+        except Exception as e:
             logger.warning(f"CommercialCafe blocked or failed: {e}")
             return []
+
+        time.sleep(3)
 
         soup = BeautifulSoup(resp.text, "html.parser")
 

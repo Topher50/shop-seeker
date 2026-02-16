@@ -1,18 +1,30 @@
 import pathlib
-import responses
+from unittest.mock import patch, MagicMock
 from src.scrapers.commercialcafe import CommercialCafeScraper
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures"
 
 
-@responses.activate
-def test_scrape_returns_listings():
+def _make_response(body, status_code=200):
+    resp = MagicMock()
+    resp.text = body
+    resp.status_code = status_code
+    resp.raise_for_status = MagicMock()
+    if status_code >= 400:
+        resp.raise_for_status.side_effect = Exception(f"HTTP {status_code}")
+    return resp
+
+
+@patch("time.sleep")
+@patch("src.scrapers.commercialcafe.requests.Session")
+def test_scrape_returns_listings(MockSession, _mock_sleep):
     results_html = (FIXTURES / "commercialcafe_results.html").read_text()
-    responses.get(
-        "https://www.commercialcafe.com/commercial-real-estate/us/ca/san-francisco/?ListingType=Lease",
-        body=results_html,
-        status=200,
-    )
+    warmup_resp = _make_response("<html></html>")
+    search_resp = _make_response(results_html)
+
+    mock_session = MagicMock()
+    mock_session.get.side_effect = [warmup_resp, search_resp]
+    MockSession.return_value = mock_session
 
     scraper = CommercialCafeScraper()
     listings = scraper.scrape()
@@ -29,26 +41,43 @@ def test_scrape_returns_listings():
     assert listings[0].sqft == "700 Sqft"
 
 
-@responses.activate
-def test_scrape_handles_empty_results():
-    responses.get(
-        "https://www.commercialcafe.com/commercial-real-estate/us/ca/san-francisco/?ListingType=Lease",
-        body="<html><body><ul class='listings'></ul></body></html>",
-        status=200,
-    )
+@patch("time.sleep")
+@patch("src.scrapers.commercialcafe.requests.Session")
+def test_scrape_handles_empty_results(MockSession, _mock_sleep):
+    warmup_resp = _make_response("<html></html>")
+    search_resp = _make_response("<html><body><ul class='listings'></ul></body></html>")
+
+    mock_session = MagicMock()
+    mock_session.get.side_effect = [warmup_resp, search_resp]
+    MockSession.return_value = mock_session
 
     scraper = CommercialCafeScraper()
     listings = scraper.scrape()
     assert listings == []
 
 
-@responses.activate
-def test_scrape_handles_cloudflare_block():
-    responses.get(
-        "https://www.commercialcafe.com/commercial-real-estate/us/ca/san-francisco/?ListingType=Lease",
-        body='<html><head><title>Just a moment...</title></head><body></body></html>',
-        status=403,
-    )
+@patch("time.sleep")
+@patch("src.scrapers.commercialcafe.requests.Session")
+def test_scrape_handles_cloudflare_block(MockSession, _mock_sleep):
+    warmup_resp = _make_response("<html></html>")
+
+    mock_session = MagicMock()
+    mock_session.get.side_effect = [warmup_resp, Exception("HTTP 403")]
+    MockSession.return_value = mock_session
+
+    scraper = CommercialCafeScraper()
+    listings = scraper.scrape()
+    assert listings == []
+
+
+@patch("time.sleep")
+@patch("src.scrapers.commercialcafe.requests.Session")
+def test_scrape_handles_network_error(MockSession, _mock_sleep):
+    warmup_resp = _make_response("<html></html>")
+
+    mock_session = MagicMock()
+    mock_session.get.side_effect = [warmup_resp, Exception("Connection refused")]
+    MockSession.return_value = mock_session
 
     scraper = CommercialCafeScraper()
     listings = scraper.scrape()
