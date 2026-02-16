@@ -34,7 +34,7 @@ class SheetsClient:
             est_monthly_cost, suitability_score, ai_notes,
             "", "", "",  # Followed Up?, Who, Notes (human columns)
         ]
-        ws.append_row(row)
+        ws.insert_row(row, index=2)
 
     def append_rejected(
         self,
@@ -54,4 +54,4 @@ class SheetsClient:
             est_monthly_cost, suitability_score, rejection_reason,
             "", "",  # Reviewed By, Notes (human columns)
         ]
-        ws.append_row(row)
+        ws.insert_row(row, index=2)
